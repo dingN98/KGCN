@@ -27,7 +27,6 @@ epoch 8    train auc: 0.8923  f1: 0.7795    eval auc: 0.7867  f1: 0.6964    test
 epoch 9    train auc: 0.8950  f1: 0.7848    eval auc: 0.7862  f1: 0.6988    test auc: 0.7885  f1: 0.7052
 time used: 13 s
 
-新建自己的仓库 吐了
+新建自己的仓库 吐了  https://github.com/dingN98/KGCN
 
-
-
+.npy 文件是在train的时候生成的  功能未知
