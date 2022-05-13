@@ -1,0 +1,33 @@
+【2022.5.13】
+尝试运行这个代码
+processor.py 是用来将数据集转换为KG的
+movie数据集 第一次train  耗时25min 台式机CPU
+epoch 0    train auc: 0.9730  f1: 0.9200    eval auc: 0.9681  f1: 0.9141    test auc: 0.9683  f1: 0.9143
+epoch 1    train auc: 0.9818  f1: 0.9372    eval auc: 0.9740  f1: 0.9245    test auc: 0.9741  f1: 0.9251
+epoch 2    train auc: 0.9881  f1: 0.9506    eval auc: 0.9772  f1: 0.9311    test auc: 0.9773  f1: 0.9313
+epoch 3    train auc: 0.9912  f1: 0.9586    eval auc: 0.9775  f1: 0.9315    test auc: 0.9776  f1: 0.9317
+epoch 4    train auc: 0.9934  f1: 0.9643    eval auc: 0.9772  f1: 0.9311    test auc: 0.9772  f1: 0.9315
+epoch 5    train auc: 0.9947  f1: 0.9684    eval auc: 0.9765  f1: 0.9300    test auc: 0.9765  f1: 0.9302
+epoch 6    train auc: 0.9956  f1: 0.9717    eval auc: 0.9759  f1: 0.9297    test auc: 0.9760  f1: 0.9298
+epoch 7    train auc: 0.9962  f1: 0.9739    eval auc: 0.9756  f1: 0.9288    test auc: 0.9757  f1: 0.9290
+epoch 8    train auc: 0.9965  f1: 0.9755    eval auc: 0.9752  f1: 0.9284    test auc: 0.9753  f1: 0.9287
+epoch 9    train auc: 0.9968  f1: 0.9767    eval auc: 0.9748  f1: 0.9277    test auc: 0.9749  f1: 0.9280
+time used: 1527 s
+
+music数据集耗时很少
+epoch 0    train auc: 0.8530  f1: 0.7879    eval auc: 0.5161  f1: 0.5167    test auc: 0.5028  f1: 0.5002
+epoch 1    train auc: 0.8673  f1: 0.7875    eval auc: 0.5965  f1: 0.5700    test auc: 0.5932  f1: 0.5693
+epoch 2    train auc: 0.8280  f1: 0.7394    eval auc: 0.6931  f1: 0.6244    test auc: 0.6970  f1: 0.6280
+epoch 3    train auc: 0.8375  f1: 0.7242    eval auc: 0.7496  f1: 0.6507    test auc: 0.7516  f1: 0.6535
+epoch 4    train auc: 0.8655  f1: 0.7369    eval auc: 0.7754  f1: 0.6658    test auc: 0.7740  f1: 0.6679
+epoch 5    train auc: 0.8773  f1: 0.7584    eval auc: 0.7832  f1: 0.6878    test auc: 0.7821  f1: 0.6834
+epoch 6    train auc: 0.8852  f1: 0.7679    eval auc: 0.7863  f1: 0.6921    test auc: 0.7856  f1: 0.6904
+epoch 7    train auc: 0.8901  f1: 0.7756    eval auc: 0.7869  f1: 0.6955    test auc: 0.7871  f1: 0.6994
+epoch 8    train auc: 0.8923  f1: 0.7795    eval auc: 0.7867  f1: 0.6964    test auc: 0.7877  f1: 0.7018
+epoch 9    train auc: 0.8950  f1: 0.7848    eval auc: 0.7862  f1: 0.6988    test auc: 0.7885  f1: 0.7052
+time used: 13 s
+
+新建自己的仓库 吐了
+
+
+
