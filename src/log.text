@@ -44,3 +44,17 @@ time used: 13 s
 计划1：继续看论文的那个代码，研究下它是怎么建立KG的
 计划2：重新建一个知识图谱 kg_movies_2 实体movie里面加入更多 属性实体
 
+尝试理解preprocess.py
+1、字典 item_index_old2new 作用是做一个映射，就是将【老的item的id】映射成【新的item的id】，前者是不连续的，后者是连续的。
+字典 user_index_old2new同理
+2、字典 user_pos_ratings 的作用是保存用户的积极评分【rating>=4】，key是【userid】,value是个集合【set】，包含该用户积极评论过的所有电影的id【movieid】
+字典 user_neg_ratings 的作用的保存评分<4的数据
+3、ratings_final.txt 保存着 【新的userid】、【新的itemid】、【1或者0】（1代表用户对这个电影的评分>=4，0代表用户没看过这个电影，每个用户的1和0数量一样）
+4、item_index2entity_id.txt 的作用是id映射，就是把知识图谱里的【itemid】映射到【连续的itemid】
+5、kg.txt是movie知识图谱，三个字段分别是【电影实体id】、【关系】、【其他实体id】
+
+现在可以确定的是，KGCN的作者构建了一个movie知识图谱，其中的【实体】包含以下：【电影id】、【genre】、【actor】、【producer】、【director】、【star】、【language】等等。
+其中的【关系】是一种三级结构，典型的实例【film.film.actor】、【film.film.language】、【media_common.creative_work.honors】等等。
+然后作者从这个知识图谱里将【电影实体-关系-其他实体】三元组提取出来，存储在kg.txt里，一个实例是【11904	film.film.producer	16954】，
+作者对kg.txt做了预处理，就是将文本关系映射成数字，最后结果是32个关系，6036个user，16954个item，102569个实体（包含item）。
+
