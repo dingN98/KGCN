@@ -58,3 +58,31 @@ time used: 13 s
 然后作者从这个知识图谱里将【电影实体-关系-其他实体】三元组提取出来，存储在kg.txt里，一个实例是【11904	film.film.producer	16954】，
 作者对kg.txt做了预处理，就是将文本关系映射成数字，最后结果是32个关系，6036个user，16954个item，102569个实体（包含item）。
 
+【2022.5.16】
+data_loader.py
+1、构建评分数据集
+load_rating() 将ratings_final.txt【user,movie,rating】转换为npy格式（原因未知），然后将ratings_final.npy 按照 6:2:2的比例划分为 train，eval,test（训练集、验证集、测试集）
+2、构建知识图谱
+load_kg() 将kg_final.txt【head,relation,tail】转换为npy格式，然后构建 一个dict() 叫做kg。这个字典的key是head,然后value是(tail,relation)的二元组；key是tail，value是(head,relation)的二元组。因此，这个kg字典应该是个无向图。
+3、构建邻接矩阵
+load_adj() 构架俩邻接矩阵：adj_entity 和 adj_relation ，二者都是二维数组【实体数量*邻域采样大小】，元素类型是int64。
+数组的行标代表【实体A的id】，然后对于 adj_entity，列代表【实体B的id】，对于adj_relation，列代表【实体A和实体B的关系】
+
+model.py
+执行流程
+def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation):
+        self._parse_args(args, adj_entity, adj_relation)
+        self._build_inputs()
+        self._build_model(n_user, n_entity, n_relation)
+        self._build_train()
+
+1、_parse_args()  导入了 【实体邻接矩阵】、【关系邻接矩阵】、【迭代次数】、【batch_size】、【向量维度】、【l2_weight】、【lr】、【聚合器】
+2、_build_inputs() 在tf里做【user_indices】、【item_indices】、【labels】的占位符
+3、_build_model() 主要涉及到三个嵌入矩阵，user_emb_matrix、entity_emb_matrix、relation_emb_matrix 和 衍生矩阵
+（1）user的嵌入向量
+user_emb_matrix 【n_user * dim】，user_embeddings 【batch_size * dim】 。 user_embeddings是在user_emb_matrix里选取的 batch_size 大小的数据。
+# [batch_size, dim]
+self.user_embeddings = tf.nn.embedding_lookup(self.user_emb_matrix, self.user_indices)
+维度32，
+2、信息聚合过程（邻域采样已经在 邻接矩阵  那一步做完了）
+3、梯度下降过程
