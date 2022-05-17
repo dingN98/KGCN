@@ -114,6 +114,30 @@ AUC的本质含义反映的是对于任意一对正负例样本,模型将正样�
 f1 = f1_score(y_true=labels, y_pred=scores)
 F1-Measure是根据准确率Precision和召回率Recall二者给出的一个综合的评价指标，具体定义如下：F1 = 2rp / ( r +p )，其中r为recall，p为precision.
 
+train.py
+1、载入data
+通过data_loader.py获取data ： n_user, n_item, n_entity, n_relation, train_data, eval_data, test_data, adj_entity, adj_relation
+2、KGCN模型初始化
+model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation)
+3、topK评价指标设置
+user_list, train_record, test_record, item_set, k_list = topk_settings(show_topk, train_data, test_data, n_item)
+4、正式训练
+在每个epoch下做以下工作：
+（1）将训练集打乱 shuffle
+（2）循环：在训练集中选取 batch_size行 的数据计算，剩余的一小部分数据直接丢弃
+调用model.train()函数训练
+（3）评价训练结果【训练集、验证集、测试集】
+调用ctr_eval()函数评价，得到auc和f1
+（4）如果开启了topK评价指标
+通过topk_eval()函数计算
+
+5、一些子函数
+（1）topk_settings()
+
+
+
+
+
 
 
 
