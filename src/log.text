@@ -197,3 +197,18 @@ output = tf.reshape(neighbors_agg, [-1, self.dim])
 
 【看完代码后的疑问】
 1、user、item、relation 三者的embedding嵌入到底是啥？
+还是在于那三个矩阵 user_emb_matrix 、entity_emb_matrix 、 relation_emb_matrix
+答案在model.py的函数 _build_model():
+def _build_model(self, n_user, n_entity, n_relation):
+        self.user_emb_matrix = tf.get_variable(
+            shape=[n_user, self.dim], initializer=KGCN.get_initializer(), name='user_emb_matrix')
+        self.entity_emb_matrix = tf.get_variable(
+            shape=[n_entity, self.dim], initializer=KGCN.get_initializer(), name='entity_emb_matrix')
+        self.relation_emb_matrix = tf.get_variable(
+            shape=[n_relation, self.dim], initializer=KGCN.get_initializer(), name='relation_emb_matrix')
+
+三个矩阵的初始化值  是从哪里获取的呢？
+答案在model.py的函数 get_initializer():
+@staticmethod
+    def get_initializer():
+        return tf.contrib.layers.xavier_initializer()
