@@ -172,15 +172,28 @@ def __init__(self, batch_size, dim, dropout, act, name):
         self.act = act
         self.batch_size = batch_size
         self.dim = dim
-2、父类函数详解
 
+2、信息聚合核心函数
+（1）邻域节点们的信息聚合  _mix_neighbor_vectors()
+【权重 = 用户嵌入 * 关系嵌入】
+user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
+正则化
+user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, dim=-1)
+扩展
+user_relation_scores_normalized = tf.expand_dims(user_relation_scores_normalized, axis=-1)
+【邻域实体信息 = 权重 * 邻域实体嵌入】
+neighbors_aggregated = tf.reduce_mean(user_relation_scores_normalized * neighbor_vectors, axis=2)
 
-
-
-3、三种聚合器的代码差别，即怎么聚合【自己的嵌入】和【邻域节点们传入的嵌入】
+（2）【自己的嵌入】和【邻域节点们传入的嵌入】的聚合  _call()
+三种聚合器的代码差别
 【SumAggregator】俩个嵌入【相加】
 output = tf.reshape(self_vectors + neighbors_agg, [-1, self.dim])
 【ConcatAggregator】两个嵌入【拼接】
 output = tf.concat([self_vectors, neighbors_agg], axis=-1)
 【NeighborAggregator】直接放弃【自己的嵌入】
 output = tf.reshape(neighbors_agg, [-1, self.dim])
+
+
+
+【看完代码后的疑问】
+1、user、item、relation 三者的embedding嵌入到底是啥？
