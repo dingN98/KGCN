@@ -212,3 +212,9 @@ def _build_model(self, n_user, n_entity, n_relation):
 @staticmethod
     def get_initializer():
         return tf.contrib.layers.xavier_initializer()
+百度：该函数返回一个用于初始化权重的初始化程序 “Xavier” 。 这个初始化器是用来保持每一层的梯度大小都差不多相同。参数：uniform: 使用uniform或者normal分布来随机初始化。
+我万万没想到，这些矩阵的初始值居然是随机的。完全没有用那种 KGE 算法初始化权重，怪不得 作者将【关系】简单地映射成数字，只看一共有多少种关系，而不会去关心这些【关系】到底是啥。
+
+2、我是否可以在这个代码里加入 KGE ，还是 找 KRAN 和 KGAT 的源码看看？
+
+3、这个move知识图谱是咋建立起来的？
