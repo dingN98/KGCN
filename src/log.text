@@ -77,12 +77,46 @@ def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation)
         self._build_train()
 
 1、_parse_args()  导入了 【实体邻接矩阵】、【关系邻接矩阵】、【迭代次数】、【batch_size】、【向量维度】、【l2_weight】、【lr】、【聚合器】
+
 2、_build_inputs() 在tf里做【user_indices】、【item_indices】、【labels】的占位符
+
 3、_build_model() 主要涉及到三个嵌入矩阵，user_emb_matrix、entity_emb_matrix、relation_emb_matrix 和 衍生矩阵
 （1）user的嵌入向量
 user_emb_matrix 【n_user * dim】，user_embeddings 【batch_size * dim】 。 user_embeddings是在user_emb_matrix里选取的 batch_size 大小的数据。
-# [batch_size, dim]
 self.user_embeddings = tf.nn.embedding_lookup(self.user_emb_matrix, self.user_indices)
+
+【2022.5.17】
+
+（2）通过item_indices 获取 邻域实体和关系
+entities, relations = self.get_neighbors(self.item_indices)
+（3）将邻域实体和关系 通过 【聚合器】聚合信息
+self.item_embeddings, self.aggregators = self.aggregate(entities, relations)
+（4）计算模型得分并正则化
+self.scores = tf.reduce_sum(self.user_embeddings * self.item_embeddings, axis=1)
+self.scores_normalized = tf.sigmoid(self.scores)
+
+4、_build_train()
+（1）基础loss  base_loss 计算标签labels和得分scores的交叉熵
+（2）l2_loss 好复杂  和 聚合器 aggregator 的weights也有关  以后研究下
+（3）最终的loss等于三个loss的和
+self.loss = self.base_loss + self.l2_weight * self.l2_loss
+（4）优化器
+self.optimizer = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
+
+5、train()
+sess.run([self.optimizer, self.loss], feed_dict)
+
+6、eval()评价指标
+（1）auc
+auc = roc_auc_score(y_true=labels, y_score=scores)
+AUC的本质含义反映的是对于任意一对正负例样本,模型将正样本预测为正例的可能性 大于 将负例预测为正例的可能性的 概率
+（2）f1
+f1 = f1_score(y_true=labels, y_pred=scores)
+F1-Measure是根据准确率Precision和召回率Recall二者给出的一个综合的评价指标，具体定义如下：F1 = 2rp / ( r +p )，其中r为recall，p为precision.
+
+
+
+
 维度32，
 2、信息聚合过程（邻域采样已经在 邻接矩阵  那一步做完了）
 3、梯度下降过程
