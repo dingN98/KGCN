@@ -132,15 +132,55 @@ user_list, train_record, test_record, item_set, k_list = topk_settings(show_topk
 通过topk_eval()函数计算
 
 5、一些子函数
-（1）topk_settings()
+（1）topk_settings() 调用 get_user_record()
+训练集 train_record 来自 train_data 里label为1或者0的数据；测试集 test_record 来自 test_data 里label为1的样本。
+意味着，train_record包含正样本和负样本，test_record只包含正样本。二者的结构都是dict()，其中key是userid，value是itemid的set。
+函数返回 return user_list, train_record, test_record, item_set, k_list，
+其中，user_list 是 train_record 和 test_record 的user的交集，长度上限100，
+item_set = set(list(range(n_item)))，
+k_list = [1, 2, 5, 10, 20, 50, 100]  作用未知。
+
+（2）topk_eval()
+这个函数的一开始的两行揭示了 k_list的作用，就是：需要多个topK的评判，即top1,top2,top5,top10,top20,top50,top100，最后再取平均值。
+【循环】对于user_list的每个user，做以下操作：
+1）将要输入到模型里的数据：test_item_list = list(item_set - train_record[user])，就是推测用户user对他喜欢的item之外的其他的item的评分，
+2）输出dict()   item_score_map[item] = score
+3)将item_score_map 按照得分进行降序排序，得到 item_score_pair_sorted
+4）item_sorted = [i[0] for i in item_score_pair_sorted]  只保留itemid
+5)计算准确率 precision 和召回率 recall
+首先计算【topk推荐的item】和【用户喜欢的item】的交集：hit_num = len(set(item_sorted[:k]) & test_record[user])
+然后，
+precision_list[k].append(hit_num / k)
+recall_list[k].append(hit_num / len(test_record[user]))
+最后求平均，得到最终的俩指标。
+
+（3）get_feed_dict()
+用于获取 data 中 batch_size 大小的数据
+
+（4）ctr_eval()
+调用 model.eval()计算 f1 和 auc
+首先是循环，计算一个 batch_size 里的 f1 和 auc，然后将结果加入到 list 里，最后对 list 里的数据求平均。
+
+aggregators.py
+1、初始化父类【Aggregator】
+def __init__(self, batch_size, dim, dropout, act, name):
+        if not name:
+            layer = self.__class__.__name__.lower()
+            name = layer + '_' + str(get_layer_id(layer))
+        self.name = name
+        self.dropout = dropout
+        self.act = act
+        self.batch_size = batch_size
+        self.dim = dim
+2、父类函数详解
 
 
 
 
-
-
-
-
-维度32，
-2、信息聚合过程（邻域采样已经在 邻接矩阵  那一步做完了）
-3、梯度下降过程
+3、三种聚合器的代码差别，即怎么聚合【自己的嵌入】和【邻域节点们传入的嵌入】
+【SumAggregator】俩个嵌入【相加】
+output = tf.reshape(self_vectors + neighbors_agg, [-1, self.dim])
+【ConcatAggregator】两个嵌入【拼接】
+output = tf.concat([self_vectors, neighbors_agg], axis=-1)
+【NeighborAggregator】直接放弃【自己的嵌入】
+output = tf.reshape(neighbors_agg, [-1, self.dim])
