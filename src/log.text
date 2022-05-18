@@ -218,3 +218,7 @@ def _build_model(self, n_user, n_entity, n_relation):
 2、我是否可以在这个代码里加入 KGE ，还是 找 KRAN 和 KGAT 的源码看看？
 
 3、这个move知识图谱是咋建立起来的？
+
+
+【2022.5.19】
+搞上传KGAT的源码 上传吐了
