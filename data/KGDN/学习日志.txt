@@ -1,0 +1,136 @@
+2022.6.4
+今天 白天 构建了 movie 知识图谱
+包含 五类节点  user movie genre director star
+四类关系 genre director star rating
+导入 neo4j 的过程很慢
+导入节点很快，目前已经有了 466122 个节点
+导入关系很慢，导入 genre 的关系就花了半天，那个 director 估计也会花半天， star 估计会花 一天半
+
+下一步 晚上计划 基于 KGCN ，尝试构建自己的数据集
+作者的  /movie 目录下，难以理解的文件包括:
+
+item_index2entity_id.txt
+kg.txt
+kg.final
+ratings.final
+
+data/movie/
+item_index2entity_id.txt: the mapping from item indices in the raw rating file to entity IDs in the KG;
+kg.txt: knowledge graph file;
+
+
+我理解了知识图谱的思路，其实不需要将数据导入到 neo4j 里，只需要把 若干个实体建好，还有实体之间的关系建好就行了。
+我下载的数据是 D:\迅雷下载\genome_2021\movie_dataset_public_final\raw
+里面的 meta.json 记录了 movie 的元数据信息，核心的包括 电影名字、导演、演员
+"title": "Toy Story (1995)",
+"directedBy": "John Lasseter",
+"starring": "Tim Allen, Tom Hanks, Don Rickles, Jim Varney, John Ratzenberger, Wallace Shawn, Laurie Metcalf, John Morris, R. Lee Ermey, Annie Potts"
+
+这个 metadata.json 包含 84662 个电影，但是因为电影的id不连续，所以最后一个电影的id是 239314
+使用这个数据可以建立  电影实体、导演实体、演员实体
+
+我需要做一个对比验证
+就是 movies.csv 里的电影id 是否和  metadata.json 里的id 对应起来
+
+取 movies.csv 里最后几行
+209163,Bad Poems (2018),Comedy|Drama
+209169,A Girl Thing (2001),(no genres listed)
+209171,Women of Devil's Island (1962),Action|Adventure|Drama
+
+在 metadata.json 根据电影名字查找id
+{"title": "Bad Poems (2018)", "directedBy": "G\u00e1bor Reisz", "starring": "G\u00e1bor Reisz,Katica Nagy,Niels Schneider,Zsolt Kov\u00e1cs,Katalin Tak\u00e1cs", "dateAdded": "2019-11-20T15:21:45", "avgRating": 4.0, "imdbId": "6755366", "item_id": 209163}
+{"title": "A Girl Thing (2001)", "directedBy": "Lee Rose", "starring": "Kate Capshaw,Stockard Channing,Rebecca De Mornay,Mia Farrow,Linda Hamilton", "dateAdded": "2019-11-20T17:16:44", "avgRating": 3.0, "imdbId": "0249603", "item_id": 209169}
+{"title": "Women of Devil's Island (1962)", "directedBy": "Domenico Paolella", "starring": "Guy Madison,Mich\u00e8le Mercier,Federica Ranchi,Marisa Belli,Paul M\u00fcller", "dateAdded": "2019-11-20T17:18:52", "avgRating": 3.0, "imdbId": "0055323", "item_id": 209171}
+完全对应
+
+所以可以使用 movies.csv + metadata.json 的方式，构建 movie 知识图谱
+movie实体 可以 和 director实体、star实体、genre实体 构建联系
+
+raw/metadata.json
+--------
+The file contains information about movies from MovieLens - 84,661 lines of json objects that have the following fields:
+title – movie title (84,484 unique titles)
+directedBy – directors separated by comma (‘,’)
+starring – actors separated by comma (‘,’)
+dateAdded – date, when the movie was added to MovieLens
+avgRating – average rating of a movie on MovieLens
+imdbId – movie id on the IMDB website (84,661 unique ids)
+item_id – movie id, which is consistent across files (84,661 unique ids)
+Example line:
+{"title": "Toy Story (1995)", "directedBy": "John Lasseter", "starring": "Tim Allen, Tom Hanks, Don Rickles, Jim Varney, John Ratzenberger, Wallace Shawn, Laurie Metcalf, John Morris, R. Lee Ermey, Annie Potts", "dateAdded": null, "avgRating": 3.89146, "imdbId": "0114709", "item_id": 1}
+
+
+2022.6.5
+昨天我已经成功构建了 movie 知识图谱， kg0605.txt，包含：
+电影 84661
+类别 20
+导演 33593
+明星 122973
+关系 579000
+
+今天搞一下训练集 ratings.csv 生成 正负样本的原理，
+我使用自己的数据集成功生成了  kg  和  ratings_final.txt
+D:\python\python3.7.1\python.exe "D:/file/idea projects/KGCN/data/KGDN/movieKG/getTrainData.py"
+电影 84661
+类别 20
+导演 33592
+明星 122972
+2022-06-05 17:28:59
+根据 ratings.json 构建正负样本 ...
+2022-06-05 17:31:24
+构建数据集 ratings_final.txt ...
+2022-06-05 18:17:31
+number of users: 242774
+number of items: 84661
+
+因为 metadata.json 里很多 movie 的 director 或者 star 是空的，所以需要将这种 movie 排除，然后数量就少了很多（84661 -> 82949）
+电影 82949
+类别 20
+导演 33592
+明星 122972
+关系 567421
+
+然后开始跑我的数据集，看 acc 啥的
+电影 82949
+类别 20
+导演 33592
+明星 122972
+2022-06-05 19:57:00
+根据 ratings.json 构建正负样本 ...
+2022-06-05 19:59:08
+构建数据集 ratings_final.txt ...
+2022-06-05 20:40:05
+number of users: 242770
+number of items: 82949
+
+(KGAT) D:\file\idea projects\KGCN\data\KGDN\src>python main.py
+reading rating file ...
+splitting dataset ...
+reading KG file ...
+constructing knowledge graph ...
+constructing adjacency matrix ...
+data loaded.
+WARNING:tensorflow:From D:\file\idea projects\KGCN\data\KGDN\src\aggregators.py:48: calling softmax (from tensorflow.python.ops.nn_ops) with dim is deprecated and will be r
+emoved in a future version.
+Instructions for updating:
+dim is deprecated, use axis instead
+2022-06-05 20:57:29.913159: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX
+2
+epoch 0    train auc: 0.9886  f1: 0.9553    eval auc: 0.9863  f1: 0.9513    test auc: 0.9863  f1: 0.9513
+epoch 1    train auc: 0.9921  f1: 0.9649    eval auc: 0.9887  f1: 0.9573    test auc: 0.9887  f1: 0.9573
+epoch 2    train auc: 0.9941  f1: 0.9699    eval auc: 0.9895  f1: 0.9593    test auc: 0.9895  f1: 0.9594
+epoch 3    train auc: 0.9952  f1: 0.9730    eval auc: 0.9896  f1: 0.9598    test auc: 0.9896  f1: 0.9599
+epoch 4    train auc: 0.9959  f1: 0.9754    eval auc: 0.9894  f1: 0.9596    test auc: 0.9894  f1: 0.9598
+epoch 5    train auc: 0.9964  f1: 0.9770    eval auc: 0.9892  f1: 0.9594    test auc: 0.9892  f1: 0.9595
+epoch 6    train auc: 0.9967  f1: 0.9782    eval auc: 0.9890  f1: 0.9590    test auc: 0.9890  f1: 0.9592
+epoch 7    train auc: 0.9969  f1: 0.9790    eval auc: 0.9889  f1: 0.9584    test auc: 0.9888  f1: 0.9584
+epoch 8    train auc: 0.9971  f1: 0.9796    eval auc: 0.9887  f1: 0.9584    test auc: 0.9887  f1: 0.9585
+epoch 9    train auc: 0.9972  f1: 0.9799    eval auc: 0.9886  f1: 0.9581    test auc: 0.9886  f1: 0.9582
+time used: 6694 s
+
+
+
+明天计划寻找模型的改进点，然后看是否可以让准确率提升。
+
+
+

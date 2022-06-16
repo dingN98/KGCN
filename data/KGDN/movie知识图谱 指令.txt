@@ -1,0 +1,70 @@
+load csv with headers from "file:///ratings.csv" as link
+with link 	  
+create(:Ratings{userId:link.userId,movieId:link.movieId,rating:link.rating,
+timestamp:link.timestamp
+})
+
+
+LOAD CSV WITH HEADERS FROM "file:///ratings.csv" AS row MATCH (m:Movies), (u:Users) WHERE u.userId = row.userId AND m.movieId = row.movieId CREATE (u)-[r:rating{value:row.rating}]->(m)
+
+
+
+用户信息
+LOAD CSV WITH HEADERS  FROM "file:///users.csv" AS line  
+CREATE (p:user{userid:line.UserID,gender:line.Gender,age:line.Age,occupation:line.Occupation,zipcode:line.ZipCode})
+
+电影信息
+LOAD CSV WITH HEADERS  FROM "file:///movies.csv" AS line  
+CREATE (p:movie{movieid:line.MovieID,title:line.Title,genres:line.Genres}) 
+
+评分信息
+LOAD CSV WITH HEADERS FROM "file:///ratings.csv" AS line
+MATCH (entity1:user{userid:line.userID}), (entity2:movie{movieid:line.MovieID})
+CREATE (entity1)-[:RAITING{ raiting: line.Rating }]->(entity2)
+
+清空知识图谱
+match (n) detach delete n
+
+
+
+
+2022.6.4   KGDN
+
+首先导入 实体 ，包含  user movie genre director star
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/user_index.csv" AS line CREATE (p:user{userId:line.userId})
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/movies_index.csv" AS line CREATE (p:movie{movieId:line.movieId,movieName:line.movieName})
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/genres_index.csv" AS line CREATE (p:genre{genreId:line.genreId,genreName:line.genreName})
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/stars_index.csv" AS line CREATE (p:star{starId:line.starId,starName:line.starName})
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/directors_index.csv" AS line CREATE (p:director{directorId:line.directorId,directorName:line.directorName})
+
+然后是关系
+（1）movieName,relation,genre            movies_relations_genres.csv
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/movies_relations_genres.csv" AS line 
+MATCH (entity1:movie{movieName:line.movieName}),(entity2:genre{genreName:line.genre})
+CREATE (entity1)-[:genre{}]->(entity2)
+
+(2) movieName,starName       movies_relations_stars.csv
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/movies_relations_stars.csv" AS line 
+MATCH (entity1:movie{movieName:line.movieName}),(entity2:star{starName:line.starName})
+CREATE (entity1)-[:star{}]->(entity2)
+
+（3）movieName,directorName       movies_relations_directors.csv
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/movies_relations_directors.csv" AS line 
+MATCH (entity1:movie{movieName:line.movieName}),(entity2:director{directorName:line.directorName})
+CREATE (entity1)-[:director{}]->(entity2)
+
+
+（4）评分关系  userId,movieId,rating    
+
+LOAD CSV WITH HEADERS FROM "file:///KGDN/ratings.csv" AS line 
+MATCH (entity1:user{userId:line.userId}),(entity2:movie{movieId:line.movieId})
+CREATE (entity1)-[:rating{score:line.rating}]->(entity2)
+
